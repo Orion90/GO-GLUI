@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
+	// "github.com/go-gl/gltext"
 	"github.com/go-gl/glu"
 	"runtime"
 	"time"
@@ -75,22 +76,25 @@ func main() {
 	vao.Bind()
 
 	vbo := gl.GenBuffer()
-	vbo.Bind(gl.ARRAY_BUFFER)
 
 	verticies := []float32{
-		0.0, 0.5, 1.0, 0.0, 0.0, 0.1, // Vertex 1: Red
-		0.5, 0, 0.0, 1.0, 0.0, 0.1, // Vertex 2: Green
-		-0.5, 0, 0.0, 0.0, 1.0, 0.1, // Vertex 3: Blue
-
-		0.5, 0, 0.0, 1.0, 0.0, 0.1, // Vertex 2: Green
-		-0.5, 0, 0.0, 0.0, 1.0, 0.1, // Vertex 3: Blue
-		0, -0.5, 1.0, 0.0, 0.0, 0.1, // Vertex 1: Red
-
-		-0.5, -0.5, 0.8, 0.8, 0.8, 0.1, // Vertex 1: Red
-		0.5, -0.5, 0.8, 0.8, 0.8, 1, // Vertex 1: Red
+		-1.0, 1, 1.0, 0.0, 0.0, 0.1, // Vertex 1: Red
+		-1, 0.9, 0.0, 1.0, 0.0, 0.1, // Vertex 2: Green
+		-0.9, 1, 0.0, 0.0, 1.0, 0.1, // Vertex 3: Blue
+		-0.9, 0.9, 1.0, 0.0, 0.0, 0.1, // Vertex 1: Red
 	}
 
+	vbo.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, len(verticies)*4, verticies, gl.STATIC_DRAW)
+
+	ebo := gl.GenBuffer()
+	elements := []int32{
+		0, 1, 2,
+		2, 1, 3,
+	}
+
+	ebo.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(elements)*4, elements, gl.STATIC_DRAW)
 
 	vertex_shader := gl.CreateShader(gl.VERTEX_SHADER)
 	vertex_shader.Source(vertex)
@@ -117,6 +121,7 @@ func main() {
 	positionAttrib.AttribPointer(2, gl.FLOAT, false, 24, nil)
 	positionAttrib.EnableArray()
 	defer positionAttrib.DisableArray()
+
 	var col uintptr
 	col = 8
 	colorAttrib := program.GetAttribLocation("color")
@@ -124,11 +129,13 @@ func main() {
 	colorAttrib.EnableArray()
 	defer colorAttrib.DisableArray()
 	// uniColor := program.GetUniformLocation("triangleColor")
+	var off uintptr
+	off = 0
 	for !window.ShouldClose() {
 		gl.ClearColor(0, 0, 0, 0.2)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, 6)
-		gl.DrawArrays(gl.LINES, 6, 2)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 4)
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, off)
 		window.SwapBuffers()
 		glfw.PollEvents()
 
